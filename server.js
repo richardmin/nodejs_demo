@@ -1,13 +1,24 @@
 var express = require('express');
 var app = express();
-var expressHbs = require('express3-handlebars');
+var expressHbs = require('express-handlebars');
+
+//Database setup
+var mongojs = require('mongojs');
+var uri = "mongodb://nodejsdemo:acmdemo@ds025772.mlab.com:25772/nodejsdemo",
+    db = mongojs(uri, ["Quotes"]);
+
+
+
+
 app.engine('hbs', expressHbs({extname:'hbs', defaultLayout:'main.hbs'}));
 
 app.set('view engine', 'hbs');
 
+//STATIC PAGE ENDPOINTS
 app.get('/', function(req, res) {
     res.send("Hello World");
 });
+
 
 app.get('/api_endpoint', function(req, res) {
     var json_object = { name: "Node.JS Demo", location: "ACM Clubhouse" };
@@ -18,6 +29,46 @@ app.get('/user/:userID', function(req, res) {
 	res.send("<h1>Hello, " + req.params.userID + "<\/h1>");
 });
 
+
+//DATABASE EXAMPLES
+
+app.get('/addPerson/:userName/:quote', function(req, res) {
+  db.Quotes.insert({"name": req.params.userName, "quote": req.params.quote}, function(err, val) {
+    if(err) 
+      {
+        console.log(err);
+        res.send("Insert failed.");
+        return;
+      }
+      res.send("Insert successful!");
+  });
+});
+
+app.get('/viewPeople/', function(req, res) {
+
+  db.Quotes.find(function(err, records) {
+    if(err)
+    {
+      console.log("database error");
+      return;
+    }
+    console.log("found");
+    var html = '<h2>Search Results</h2>',
+    i = records.length;
+
+    while(i--) {
+        html += '<p><b>Name:</b> ' 
+             + records[i].name 
+             + ' <br /><b>Quote:</b> ' 
+             + records[i].quote;
+    }
+    res.send(html);
+
+  });
+});
+
+
+//TEMPLATE EXAMPLES
 app.get('/templates', function(req, res){
 	res.render('index');
 });
@@ -67,6 +118,8 @@ app.get('/logic', function(req, res){
   res.render('logic', data);
 });
 
+
+//SETS UP STATIC SERVER
 app.use('/static', express.static('static'));
 
 app.listen(3000);
