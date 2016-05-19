@@ -52,7 +52,6 @@ app.get('/viewPeople/', function(req, res) {
       console.log("database error");
       return;
     }
-    console.log("found");
     var html = '<h2>Search Results</h2>',
     i = records.length;
 
